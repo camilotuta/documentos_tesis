@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>DER — Sistema de Monitoreo de Fatiga v3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:#eef0f4;color:#1a1a2e}
+.bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ccc;padding:7px 18px;display:flex;align-items:center;gap:14px;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bar h1{font-size:13px;font-weight:600;white-space:nowrap}
+.bar .i{color:#888;font-size:10px}
+.lg{display:flex;gap:10px;font-size:9.5px;color:#888;flex-wrap:wrap;margin-left:auto}
+.lg span{display:flex;align-items:center;gap:3px}
+.lg .d{width:8px;height:8px;border-radius:2px}
+.zc{display:flex;gap:2px}
+.zc button{background:#fff;border:1px solid #ccc;border-radius:3px;width:28px;height:24px;cursor:pointer;font-size:12px;font-weight:700;color:#444}
+.wrap{padding-top:46px;overflow:auto;width:100vw;height:100vh}
+.cv{position:relative;transform-origin:0 0}
+
+/* Lines SVG sits BEHIND entities */
+svg.L{position:absolute;top:0;left:0;pointer-events:none;z-index:1}
+svg.L path{fill:none;stroke-width:1.8;opacity:.55;transition:stroke-width .15s,opacity .15s}
+
+/* Entities sit ON TOP with white background */
+.T{position:absolute;background:#fff;border:1.5px solid #bbb;border-radius:6px;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.T:hover{box-shadow:0 3px 12px rgba(0,0,0,.15);border-color:#777;z-index:10}
+.th{padding:5px 10px;border-radius:4px 4px 0 0;font-weight:600;font-size:11.5px;text-align:center;color:#fff;letter-spacing:.2px}
+.tf{padding:4px 0}
+.r{padding:1.5px 9px;display:flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.55}
+.r .n{flex:1;color:#333}.r .t{color:#aaa;font-size:9px}
+.b{font-size:7.5px;font-weight:700;padding:0 3px;border-radius:2px;letter-spacing:.3px;line-height:13px;display:inline-block}
+.pk{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.fk{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+.uk{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.sp{border-top:1px dashed #ddd;margin:2px 9px}
+.nt{padding:1px 9px;font-size:8px;color:#b45309;font-style:italic}
+
+/* Level labels */
+.lv{position:absolute;z-index:0;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#bbb;writing-mode:vertical-lr;transform:rotate(180deg)}
+
+.c1{background:#2c3e6b}.c2{background:#0f766e}.c3{background:#1d4ed8}.c4{background:#b91c1c}.c5{background:#b45309}.c6{background:#15803d}
+</style>
+</head>
+<body>
+<div class="bar">
+<h1>Diagrama Entidad-Relación — Sistema de Monitoreo de Fatiga</h1>
+<span class="i">30 tablas · 48 FK · PostgreSQL</span>
+<div class="lg">
+<span><span class="d" style="background:#fef3c7;border:1px solid #fcd34d"></span>PK</span>
+<span><span class="d" style="background:#dbeafe;border:1px solid #93c5fd"></span>FK</span>
+<span><span class="d" style="background:#d1fae5;border:1px solid #6ee7b7"></span>UK</span>
+<span>|</span>
+<span><span class="d" style="background:#2c3e6b"></span>Acceso</span>
+<span><span class="d" style="background:#0f766e"></span>Recursos</span>
+<span><span class="d" style="background:#1d4ed8"></span>Viajes</span>
+<span><span class="d" style="background:#b91c1c"></span>Alertas</span>
+<span><span class="d" style="background:#b45309"></span>Monitoreo</span>
+<span><span class="d" style="background:#15803d"></span>Analítica</span>
+</div>
+<div class="zc"><button onclick="zm(-.15)">−</button><button id="zl" onclick="zm(0)" style="width:38px;font-size:9px">100%</button><button onclick="zm(.15)">+</button></div>
+</div>
+
+<div class="wrap"><div class="cv" id="cv">
+<svg class="L" id="svg"></svg>
+
+<!-- ══ LEVEL 0 (y~50): Top-level parents ══ -->
+<div class="lv" style="left:8px;top:60px">NIVEL 0 — ENTIDADES RAÍZ</div>
+
+<div class="T" id="empresa" style="left:580px;top:50px;width:210px"><div class="th c1">empresa</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">nit</span><span class="t">VARCHAR(20)</span></div>
+<div class="r"><span class="n">razon_social</span><span class="t">VARCHAR(200)</span></div>
+<div class="r"><span class="n">nombre_comercial</span><span class="t">VARCHAR(200)</span></div>
+<div class="r"><span class="n">direccion</span><span class="t">VARCHAR(300)</span></div>
+<div class="r"><span class="n">telefono</span><span class="t">VARCHAR(20)</span></div>
+<div class="r"><span class="n">email</span><span class="t">VARCHAR(150)</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">fecha_registro</span><span class="t">TIMESTAMP</span></div>
+</div></div>
+
+<div class="T" id="rol" style="left:50px;top:50px;width:190px"><div class="th c1">rol</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_rol</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">codigo</span><span class="t">VARCHAR(50)</span></div>
+<div class="r"><span class="n">nombre</span><span class="t">VARCHAR(100)</span></div>
+<div class="r"><span class="n">descripcion</span><span class="t">TEXT</span></div>
+<div class="r"><span class="n">es_superusuario</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="modulo_funcional" style="left:300px;top:50px;width:200px"><div class="th c1">modulo_funcional</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_modulo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">codigo</span><span class="t">VARCHAR(50)</span></div>
+<div class="r"><span class="n">nombre</span><span class="t">VARCHAR(100)</span></div>
+<div class="r"><span class="n">descripcion</span><span class="t">TEXT</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="modelo_ia" style="left:3050px;top:50px;width:195px"><div class="th c6">modelo_ia</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_modelo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">(nombre, version)</span></div>
+<div class="r"><span class="n">f1_score</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">es_modelo_activo</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">metricas_valid</span><span class="t">JSONB</span></div>
+</div></div>
+
+<!-- ══ LEVEL 1 (y~420): Direct children of Level 0 ══ -->
+<div class="lv" style="left:8px;top:420px">NIVEL 1</div>
+
+<div class="T" id="permiso" style="left:130px;top:420px;width:200px"><div class="th c1">permiso</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_permiso</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_rol</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_modulo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">nivel</span><span class="t">ENUM</span></div>
+<div class="sp"></div>
+<div class="r"><span class="b uk">UK</span><span class="n">(id_rol, id_modulo)</span></div>
+</div></div>
+
+<div class="T" id="sucursal" style="left:400px;top:420px;width:195px"><div class="th c1">sucursal</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_sucursal</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">nombre</span><span class="t">VARCHAR(200)</span></div>
+<div class="r"><span class="n">ciudad</span><span class="t">VARCHAR(100)</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="tipo_vehiculo" style="left:1700px;top:420px;width:200px"><div class="th c2">tipo_vehiculo</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_tipo_vehiculo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">nombre</span><span class="t">VARCHAR(100)</span></div>
+<div class="r"><span class="n">capacidad_carga_kg</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">numero_ejes</span><span class="t">INTEGER</span></div>
+</div></div>
+
+<div class="T" id="usuario" style="left:700px;top:420px;width:225px"><div class="th c1">usuario</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_usuario</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_rol</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_sucursal</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">username</span><span class="t">VARCHAR(50)</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">email</span><span class="t">VARCHAR(150)</span></div>
+<div class="r"><span class="n">password_hash</span><span class="t">VARCHAR(255)</span></div>
+<div class="r"><span class="n">nombres / apellidos</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">numero_documento</span><span class="t">VARCHAR(20)</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">intentos_fallidos</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">acepta_habeas_data</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="configuracion_ia" style="left:2800px;top:420px;width:210px"><div class="th c6">configuracion_ia</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_configuracion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_modelo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">umbral_fatiga</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">sensibilidad</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">fps_captura</span><span class="t">INT</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+</div></div>
+
+<div class="T" id="reporte_bi" style="left:3300px;top:420px;width:195px"><div class="th c6">reporte_bi</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_reporte</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">generado_por</span><span class="t">UUID (usuario)</span></div>
+<div class="r"><span class="n">tipo_reporte</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">kpis</span><span class="t">JSONB</span></div>
+<div class="r"><span class="n">url_descarga</span><span class="t">VARCHAR</span></div>
+</div></div>
+
+<div class="T" id="parametro_ia" style="left:3100px;top:420px;width:165px"><div class="th c6">parametro_ia</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_parametro</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_configuracion</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">clave</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">valor</span><span class="t">VARCHAR</span></div>
+</div></div>
+
+<!-- ══ LEVEL 2 (y~830): Children of usuario/tipo_vehiculo ══ -->
+<div class="lv" style="left:8px;top:830px">NIVEL 2</div>
+
+<div class="T" id="sesion" style="left:50px;top:830px;width:200px"><div class="th c1">sesion</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_sesion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_usuario</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">token_jwt</span><span class="t">TEXT</span></div>
+<div class="r"><span class="n">ip_address</span><span class="t">VARCHAR(45)</span></div>
+<div class="r"><span class="n">user_agent</span><span class="t">VARCHAR(500)</span></div>
+<div class="r"><span class="n">fecha_expiracion</span><span class="t">TIMESTAMP</span></div>
+<div class="r"><span class="n">activa</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="auditoria" style="left:320px;top:830px;width:210px"><div class="th c1">auditoria</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_auditoria</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_usuario</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">tipo_evento</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">modulo</span><span class="t">VARCHAR(80)</span></div>
+<div class="r"><span class="n">tabla_afectada</span><span class="t">VARCHAR(80)</span></div>
+<div class="r"><span class="n">accion</span><span class="t">VARCHAR(30)</span></div>
+<div class="r"><span class="n">datos_anteriores</span><span class="t">JSONB</span></div>
+<div class="r"><span class="n">datos_nuevos</span><span class="t">JSONB</span></div>
+</div></div>
+
+<div class="T" id="conductor" style="left:700px;top:830px;width:215px"><div class="th c2">conductor</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="b uk">UK</span><span class="n">id_usuario</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">numero_licencia</span><span class="t">VARCHAR(30)</span></div>
+<div class="r"><span class="n">categoria_licencia</span><span class="t">VARCHAR(10)</span></div>
+<div class="r"><span class="n">fecha_venc_licencia</span><span class="t">DATE</span></div>
+<div class="r"><span class="n">score_seguridad</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="vehiculo" style="left:1700px;top:830px;width:215px"><div class="th c2">vehiculo</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_vehiculo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_tipo_vehiculo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b uk">UK</span><span class="n">placa</span><span class="t">VARCHAR(10)</span></div>
+<div class="r"><span class="n">marca / modelo</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">soat_fecha_venc</span><span class="t">DATE</span></div>
+<div class="r"><span class="n">rtm_fecha_venc</span><span class="t">DATE</span></div>
+</div></div>
+
+<div class="T" id="exportacion_datos" style="left:3050px;top:830px;width:195px"><div class="th c6">exportacion_datos</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_exportacion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_usuario</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">formato</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">anonimizado</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">cumple_habeas</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<!-- ══ LEVEL 3 (y~1250): Rutas, asignaciones ══ -->
+<div class="lv" style="left:8px;top:1250px">NIVEL 3</div>
+
+<div class="T" id="catalogo_ruta" style="left:200px;top:1250px;width:210px"><div class="th c3">catalogo_ruta</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_catalogo_ruta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_empresa</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">nombre</span><span class="t">VARCHAR(200)</span></div>
+<div class="r"><span class="n">origen / destino</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">lat / lng</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">distancia_km</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+</div></div>
+
+<div class="T" id="ruta" style="left:580px;top:1250px;width:210px"><div class="th c3">ruta</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_ruta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_catalogo_ruta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_vehiculo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">fecha_programada</span><span class="t">DATE</span></div>
+<div class="r"><span class="n">hora_salida_est</span><span class="t">TIME</span></div>
+</div></div>
+
+<div class="T" id="asignacion_supervisor" style="left:1050px;top:1250px;width:210px"><div class="th c2">asignacion_supervisor</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_asignacion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_supervisor</span><span class="t">UUID (usuario)</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">fecha_inicio</span><span class="t">TIMESTAMP</span></div>
+<div class="r"><span class="n">activo</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="metrica_desempeno" style="left:1550px;top:1250px;width:215px"><div class="th c6">metrica_desempeno</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_metrica_desemp</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">periodo_inicio / fin</span><span class="t">DATE</span></div>
+<div class="r"><span class="n">total_viajes</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">score_seg_prom</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">score_sus_prom</span><span class="t">DECIMAL</span></div>
+</div></div>
+
+<!-- ══ LEVEL 4 (y~1680): VIAJE (hub central) ══ -->
+<div class="lv" style="left:8px;top:1680px">NIVEL 4 — HUB</div>
+
+<div class="T" id="viaje" style="left:700px;top:1680px;width:230px;border-width:2.5px;border-color:#1d4ed8"><div class="th c3">viaje ★ hub central</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_ruta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_vehiculo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">fecha_inicio</span><span class="t">TIMESTAMP</span></div>
+<div class="r"><span class="n">fecha_fin</span><span class="t">TIMESTAMP</span></div>
+<div class="r"><span class="n">duracion_total_min</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">distancia_km</span><span class="t">DECIMAL</span></div>
+</div></div>
+
+<!-- ══ LEVEL 5 (y~2100): Children of viaje ══ -->
+<div class="lv" style="left:8px;top:2100px">NIVEL 5</div>
+
+<div class="T" id="monitoreo_viaje" style="left:100px;top:2100px;width:225px"><div class="th c3">monitoreo_viaje</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_monitoreo</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="b uk">UK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">fps_captura</span><span class="t">INT (10)</span></div>
+<div class="r"><span class="n">umbral_fatiga</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">umbral_somnolencia</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">total_frames</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">score_fatiga_global</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">latencia_prom_ms</span><span class="t">INTEGER</span></div>
+</div></div>
+
+<div class="T" id="metrica_viaje" style="left:580px;top:2100px;width:210px"><div class="th c6">metrica_viaje</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_metrica</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="b uk">UK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">total_alertas_*</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">tiempo_reac_prom</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">score_seguridad</span><span class="t">DECIMAL</span></div>
+</div></div>
+
+<div class="T" id="pausa_activa" style="left:1050px;top:2100px;width:210px"><div class="th c5">pausa_activa</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_pausa</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_monitoreo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">lat / lng</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">nombre_lugar</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">ubicacion_segura</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">duracion_min</span><span class="t">DECIMAL</span></div>
+</div></div>
+
+<div class="T" id="interaccion_voz" style="left:1520px;top:2100px;width:210px"><div class="th c5">interaccion_voz</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_interaccion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">tipo</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">transcripcion</span><span class="t">TEXT</span></div>
+<div class="r"><span class="n">confianza</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">exito</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="encuesta_sus" style="left:1990px;top:2100px;width:210px"><div class="th c5">encuesta_sus</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_encuesta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">pregunta_1..10</span><span class="t">INT(1-5)</span></div>
+<div class="r"><span class="n">score_sus</span><span class="t">DECIMAL</span></div>
+<div class="sp"></div>
+<div class="nt">⚡ Trigger: cálculo automático</div>
+</div></div>
+
+<!-- ══ LEVEL 6 (y~2550): Alertas ══ -->
+<div class="lv" style="left:8px;top:2550px">NIVEL 6</div>
+
+<div class="T" id="alerta" style="left:500px;top:2550px;width:225px"><div class="th c4">alerta</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_alerta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_monitoreo</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">tipo</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">severidad</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">estado</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">score_confianza</span><span class="t">DECIMAL</span></div>
+<div class="r"><span class="n">latencia_ms</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">fue_escalada</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">datos_sensor</span><span class="t">JSONB</span></div>
+</div></div>
+
+<div class="T" id="evento_fatiga" style="left:1050px;top:2550px;width:210px"><div class="th c4">evento_fatiga</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_evento</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">tipo_evento</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">nivel_severidad</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">datos_sensor</span><span class="t">JSONB</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">asociado_alerta</span><span class="t">UUID</span></div>
+</div></div>
+
+<!-- ══ LEVEL 7 (y~2980): Alert responses ══ -->
+<div class="lv" style="left:8px;top:2980px">NIVEL 7</div>
+
+<div class="T" id="respuesta_conductor" style="left:250px;top:2980px;width:215px"><div class="th c4">respuesta_conductor</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_respuesta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_alerta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_conductor</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">tipo_respuesta</span><span class="t">VARCHAR</span></div>
+<div class="r"><span class="n">tiempo_resp_ms</span><span class="t">INTEGER</span></div>
+<div class="r"><span class="n">confirmada</span><span class="t">BOOLEAN</span></div>
+</div></div>
+
+<div class="T" id="notificacion_supervisor" style="left:750px;top:2980px;width:220px"><div class="th c4">notificacion_supervisor</div><div class="tf">
+<div class="r"><span class="b pk">PK</span><span class="n">id_notificacion</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_alerta</span><span class="t">UUID</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_supervisor</span><span class="t">UUID (usuario)</span></div>
+<div class="r"><span class="b fk">FK</span><span class="n">id_viaje</span><span class="t">UUID</span></div>
+<div class="r"><span class="n">canal</span><span class="t">ENUM</span></div>
+<div class="r"><span class="n">fue_respondida</span><span class="t">BOOLEAN</span></div>
+<div class="r"><span class="n">accion_supervisor</span><span class="t">TEXT</span></div>
+</div></div>
+
+</div></div>
+
+<script>
+let sc=1;const cv=document.getElementById("cv");
+function zm(d){if(d===0)sc=1;else sc=Math.max(.25,Math.min(1.5,sc+d));cv.style.transform="scale("+sc+")";document.getElementById("zl").textContent=Math.round(sc*100)+"%";draw();}
+
+const R=[
+["empresa","sucursal","1:N","#2c3e6b"],["empresa","usuario","1:N","#2c3e6b"],["empresa","tipo_vehiculo","1:N","#2c3e6b"],["empresa","vehiculo","1:N","#2c3e6b"],["empresa","catalogo_ruta","1:N","#2c3e6b"],["empresa","configuracion_ia","1:N","#2c3e6b"],["empresa","reporte_bi","1:N","#2c3e6b"],
+["rol","permiso","1:N","#2c3e6b"],["rol","usuario","1:N","#2c3e6b"],["modulo_funcional","permiso","1:N","#2c3e6b"],
+["usuario","sesion","1:N","#2c3e6b"],["usuario","auditoria","1:N","#2c3e6b"],
+["usuario","conductor","1:1","#0f766e"],["usuario","asignacion_supervisor","1:N","#0f766e"],["conductor","asignacion_supervisor","1:N","#0f766e"],["tipo_vehiculo","vehiculo","1:N","#0f766e"],
+["catalogo_ruta","ruta","1:N","#1d4ed8"],["conductor","ruta","1:N","#1d4ed8"],["vehiculo","ruta","1:N","#1d4ed8"],["ruta","viaje","1:N","#1d4ed8"],["conductor","viaje","1:N","#1d4ed8"],["vehiculo","viaje","1:N","#1d4ed8"],["viaje","monitoreo_viaje","1:1","#1d4ed8"],
+["viaje","alerta","1:N","#b91c1c"],["monitoreo_viaje","alerta","1:N","#b91c1c"],["alerta","respuesta_conductor","1:N","#b91c1c"],["alerta","notificacion_supervisor","1:N","#b91c1c"],["alerta","evento_fatiga","1:N","#b91c1c"],["conductor","respuesta_conductor","1:N","#b91c1c"],["viaje","evento_fatiga","1:N","#b91c1c"],["conductor","evento_fatiga","1:N","#b91c1c"],["viaje","notificacion_supervisor","1:N","#b91c1c"],
+["viaje","pausa_activa","1:N","#b45309"],["conductor","pausa_activa","1:N","#b45309"],["monitoreo_viaje","pausa_activa","1:N","#b45309"],["viaje","interaccion_voz","1:N","#b45309"],["conductor","interaccion_voz","1:N","#b45309"],["viaje","encuesta_sus","1:1","#b45309"],["conductor","encuesta_sus","1:N","#b45309"],
+["viaje","metrica_viaje","1:1","#15803d"],["conductor","metrica_desempeno","1:N","#15803d"],["modelo_ia","configuracion_ia","1:N","#15803d"],["configuracion_ia","parametro_ia","1:N","#15803d"],["usuario","exportacion_datos","1:N","#15803d"],["usuario","reporte_bi","1:N","#15803d"]
+];
+
+function anc(el,s){const l=el.offsetLeft,tp=el.offsetTop,w=el.offsetWidth,h=el.offsetHeight;if(s==="t")return{x:l+w/2,y:tp};if(s==="b")return{x:l+w/2,y:tp+h};if(s==="l")return{x:l,y:tp+h/2};return{x:l+w,y:tp+h/2};}
+function bs(a,b){const ax=a.offsetLeft+a.offsetWidth/2,ay=a.offsetTop+a.offsetHeight/2,bx=b.offsetLeft+b.offsetWidth/2,by=b.offsetTop+b.offsetHeight/2;const dx=Math.abs(bx-ax),dy=Math.abs(by-ay);if(dy>dx*0.6)return by>ay?["b","t"]:["t","b"];return bx>ax?["r","l"]:["l","r"];}
+
+function draw(){
+const svg=document.getElementById("svg");
+let mx=0,my=0;cv.querySelectorAll(".T").forEach(e=>{const r=e.offsetLeft+e.offsetWidth+80,b=e.offsetTop+e.offsetHeight+80;if(r>mx)mx=r;if(b>my)my=b;});
+cv.style.width=mx+"px";cv.style.height=my+"px";
+svg.setAttribute("width",mx);svg.setAttribute("height",my);svg.style.width=mx+"px";svg.style.height=my+"px";svg.innerHTML="";
+
+const defs=document.createElementNS("http://www.w3.org/2000/svg","defs");
+["2c3e6b","0f766e","1d4ed8","b91c1c","b45309","15803d"].forEach(c=>{
+const m=document.createElementNS("http://www.w3.org/2000/svg","marker");m.id="a"+c;m.setAttribute("viewBox","0 0 12 8");m.setAttribute("refX","12");m.setAttribute("refY","4");m.setAttribute("markerWidth","10");m.setAttribute("markerHeight","8");m.setAttribute("orient","auto");
+const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d","M0,0L12,4L0,8Z");p.setAttribute("fill","#"+c);m.appendChild(p);defs.appendChild(m);
+const o=document.createElementNS("http://www.w3.org/2000/svg","marker");o.id="o"+c;o.setAttribute("viewBox","0 0 10 10");o.setAttribute("refX","5");o.setAttribute("refY","5");o.setAttribute("markerWidth","8");o.setAttribute("markerHeight","8");
+const ci=document.createElementNS("http://www.w3.org/2000/svg","circle");ci.setAttribute("cx","5");ci.setAttribute("cy","5");ci.setAttribute("r","4");ci.setAttribute("fill","#"+c);o.appendChild(ci);defs.appendChild(o);
+});svg.appendChild(defs);
+
+const off={};
+R.forEach(([fi,ti,ca,co])=>{
+const fe=document.getElementById(fi),te=document.getElementById(ti);if(!fe||!te)return;
+const[s1,s2]=bs(fe,te);const k1=fi+s1,k2=ti+s2;off[k1]=(off[k1]||0);off[k2]=(off[k2]||0);
+const o1=off[k1]*10,o2=off[k2]*10;off[k1]++;off[k2]++;
+const a=anc(fe,s1),b=anc(te,s2);
+if(s1==="b"||s1==="t")a.x+=o1-15;else a.y+=o1-15;
+if(s2==="b"||s2==="t")b.x+=o2-15;else b.y+=o2-15;
+
+const ci=co.replace("#","");
+// White outline for visibility
+const bg=document.createElementNS("http://www.w3.org/2000/svg","path");
+let d;
+if((s1==="b"&&s2==="t")||(s1==="t"&&s2==="b")){const m=(a.y+b.y)/2;d="M"+a.x+","+a.y+"C"+a.x+","+m+" "+b.x+","+m+" "+b.x+","+b.y;}
+else if((s1==="r"&&s2==="l")||(s1==="l"&&s2==="r")){const m=(a.x+b.x)/2;d="M"+a.x+","+a.y+"C"+m+","+a.y+" "+m+","+b.y+" "+b.x+","+b.y;}
+else{d="M"+a.x+","+a.y+"C"+a.x+","+(a.y+b.y)/2+" "+b.x+","+(a.y+b.y)/2+" "+b.x+","+b.y;}
+bg.setAttribute("d",d);bg.setAttribute("stroke","#fff");bg.setAttribute("fill","none");bg.setAttribute("stroke-width","5");bg.setAttribute("opacity",".9");
+svg.appendChild(bg);
+
+const ln=document.createElementNS("http://www.w3.org/2000/svg","path");
+ln.setAttribute("d",d);ln.setAttribute("stroke",co);ln.setAttribute("fill","none");ln.setAttribute("stroke-width","1.8");ln.setAttribute("opacity",".6");
+ln.style.pointerEvents="stroke";ln.style.cursor="pointer";
+ln.setAttribute("marker-start","url(#o"+ci+")");ln.setAttribute("marker-end",ca==="1:1"?"url(#o"+ci+")":"url(#a"+ci+")");
+ln.onmouseenter=function(){this.setAttribute("stroke-width","3.5");this.setAttribute("opacity","1");};
+ln.onmouseleave=function(){this.setAttribute("stroke-width","1.8");this.setAttribute("opacity",".6");};
+svg.appendChild(ln);
+
+const mx2=(a.x+b.x)/2,my2=(a.y+b.y)/2;
+const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",mx2);t.setAttribute("y",my2-6);t.setAttribute("text-anchor","middle");t.setAttribute("font-size","10");t.setAttribute("fill","#999");t.setAttribute("font-family","IBM Plex Mono");t.textContent=ca;svg.appendChild(t);
+});
+}
+window.addEventListener("load",draw);
+</script>
+</body>
+</html>
